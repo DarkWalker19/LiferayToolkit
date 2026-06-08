@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Liferay Toolkit — Settings</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-width: 360px;
+        background: #0d1117;
+        color: #e6edf3;
+        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .wrap { max-width: 560px; margin: 0 auto; padding: 24px 20px 32px; }
+      h1 { font-size: 18px; color: #6cb6ff; margin: 0 0 4px; }
+      p.sub { margin: 0 0 20px; color: #8b98a8; font-size: 13px; }
+      .opt {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid #21262d;
+        border-radius: 8px;
+        background: #11161d;
+        margin-bottom: 10px;
+      }
+      .opt input { margin-top: 3px; width: 16px; height: 16px; accent-color: #1f6feb; }
+      .opt .text label { font-weight: 600; cursor: pointer; }
+      .opt .text .desc { color: #8b98a8; font-size: 12px; margin-top: 2px; }
+      .saved {
+        color: #4ac26b;
+        font-size: 12px;
+        height: 16px;
+        margin-top: 8px;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+      .saved.show { opacity: 1; }
+      kbd {
+        background: #1b2230;
+        border: 1px solid #2f3a4a;
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Liferay Toolkit</h1>
+      <p class="sub">Settings — saved automatically.</p>
+
+      <div class="opt">
+        <input type="checkbox" id="showFab" />
+        <div class="text">
+          <label for="showFab">Show the floating button</label>
+          <div class="desc">The round <strong>LR</strong> button at the bottom-right of the page.</div>
+        </div>
+      </div>
+
+      <div class="opt">
+        <input type="checkbox" id="enableHotkey" />
+        <div class="text">
+          <label for="enableHotkey">Enable the <kbd>Alt</kbd> + <kbd>L</kbd> shortcut</label>
+          <div class="desc">Toggle the panel from the keyboard. The toolbar icon always works.</div>
+        </div>
+      </div>
+
+      <div class="opt">
+        <input type="checkbox" id="autoRefresh" />
+        <div class="text">
+          <label for="autoRefresh">Auto-refresh on page change</label>
+          <div class="desc">While the panel is open, re-fetch data when you navigate to a new page. You can also toggle this from the panel header.</div>
+        </div>
+      </div>
+
+      <div class="saved" id="saved">Saved</div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>
