@@ -29,3 +29,17 @@ export function firstParam(ctx: PageContext, ...suffixes: string[]): string | un
   }
   return undefined;
 }
+
+/** The targeted portlet id from the `p_p_id` query param, if present. */
+export function portletId(ctx: PageContext): string | undefined {
+  return ctx.params['p_p_id'];
+}
+
+/**
+ * True if the page targets a portlet whose id contains `fragment` (case-insensitive).
+ * Lets fetchers disambiguate entities that share a param name across portlets
+ * (e.g. `folderId` belongs to D&M *or* Journal depending on the portlet).
+ */
+export function isPortlet(ctx: PageContext, fragment: string): boolean {
+  return (portletId(ctx) ?? '').toLowerCase().includes(fragment.toLowerCase());
+}

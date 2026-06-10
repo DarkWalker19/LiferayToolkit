@@ -55,6 +55,19 @@ auto-refresh and writes it back to settings (kept in sync both ways). Auto-refre
 watches navigation only while the panel is open (URL poll every 600ms + popstate,
 250ms debounce) — covers SennaJS SPA pushState and full reloads.
 
+## Liferay gating, version & update check
+
+The FAB widget and the Alt+L hotkey only activate on a **confirmed Liferay page**
+(`snap.themeDisplay != null`); the toolbar icon always toggles the panel, which on a
+non-Liferay page shows only "Liferay not detected". The header shows the installed
+version (`chrome.runtime.getManifest().version`) plus a "made by Riccardo Serci"
+credit (→ github.com/DarkWalker19). On a Liferay page the panel asks the service
+worker (`type:'check-update'`) for the latest GitHub release; the worker fetches
+`api.github.com/repos/<REPO>/releases/latest` (`REPO` const in `background.ts`,
+currently `DarkWalker19/LiferayToolkit`), caches it 6h in `storage.local`, and a green
+"↑ vX" badge appears if it's newer (`compareSemver` in `core/version.ts`). No releases
+yet → 404 → badge stays hidden (safe).
+
 ## Data strategy
 
 Hybrid. **JSONWS first** (`/api/jsonws/...`) because it exposes legacy fields the
@@ -94,7 +107,9 @@ JSONWS→Headless fallback + a secondary (asset entry) lookup.
   for a production build.
 - Detection relies on portlet query params (`_..._folderId` etc.). Some D&M/Journal
   admin screens keep the id in DOM/state instead of the URL — may need DOM probes.
-- Shipped fetchers: theme-display (always), layout, journal-article, dm-folder,
-  dm-file-entry, ddm-structure, ddm-template, user, role, asset-vocabulary, asset-category.
+- Shipped fetchers: theme-display (always), layout, journal-article, journal-folder,
+  dm-folder, dm-file-entry, ddm-structure, ddm-template, user, role, asset-vocabulary,
+  asset-category, asset-tag. Journal vs D&M folders share the `folderId` param and are
+  split by `p_p_id` (`isPortlet(ctx, "JournalPortlet")` in `core/params.ts`).
 - Ideas next: current portlet instance ids, "resolve any classNameId", expando
-  values, organizations/sites, asset tags.
+  values, organizations/sites.

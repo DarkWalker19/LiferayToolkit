@@ -2,6 +2,7 @@ import { buildContext } from '../core/context';
 import { getApplicableFetchers } from '../core/registry';
 import { saveSettings, type Settings } from '../core/settings';
 import type { FetchResult } from '../core/types';
+import { compareSemver } from '../core/version';
 import { renderResult } from '../views/genericView';
 import { requestSnapshot } from './bridge-client';
 import { CSS } from './styles';
@@ -11,11 +12,17 @@ export class Panel {
   private panelEl!: HTMLElement;
   private fab!: HTMLButtonElement;
   private autoBtn!: HTMLButtonElement;
+  private updateLink!: HTMLAnchorElement;
   private body!: HTMLElement;
   private toastEl!: HTMLElement;
   private isOpen = false;
   private toastTimer = 0;
   private settings: Settings;
+
+  // Confirmed Liferay page = the bridge saw Liferay.ThemeDisplay. The FAB and the
+  // Alt+L hotkey are gated on this; the toolbar icon still works everywhere.
+  private isLiferay = false;
+  private updateChecked = false;
 
   // Navigation watch (auto-refresh while open).
   private lastUrl = location.href;
@@ -33,6 +40,7 @@ export class Panel {
     document.documentElement.appendChild(host);
     this.build();
     this.applySettings(settings);
+    void this.detectLiferay();
   }
 
   private build(): void {
@@ -51,9 +59,36 @@ export class Panel {
 
     const header = document.createElement('div');
     header.className = 'lt-header';
-    const title = document.createElement('div');
+
+    const titlewrap = document.createElement('div');
+    titlewrap.className = 'lt-titlewrap';
+
+    const titlerow = document.createElement('div');
+    titlerow.className = 'lt-titlerow';
+    const title = document.createElement('span');
     title.className = 'lt-title';
     title.textContent = 'Liferay Toolkit';
+    const version = document.createElement('span');
+    version.className = 'lt-version';
+    version.textContent = chrome.runtime.getManifest().version;
+    this.updateLink = document.createElement('a');
+    this.updateLink.className = 'lt-update';
+    this.updateLink.target = '_blank';
+    this.updateLink.rel = 'noopener';
+    this.updateLink.hidden = true;
+    titlerow.append(title, version, this.updateLink);
+
+    const credits = document.createElement('div');
+    credits.className = 'lt-credits';
+    credits.append(document.createTextNode('by '));
+    const creditLink = document.createElement('a');
+    creditLink.href = 'https://github.com/DarkWalker19';
+    creditLink.target = '_blank';
+    creditLink.rel = 'noopener';
+    creditLink.textContent = 'Riccardo Serci';
+    credits.appendChild(creditLink);
+
+    titlewrap.append(titlerow, credits);
 
     const actions = document.createElement('div');
     actions.className = 'lt-actions';
@@ -67,7 +102,7 @@ export class Panel {
     close.title = 'Close';
     actions.append(this.autoBtn, refresh, settingsBtn, close);
 
-    header.append(title, actions);
+    header.append(titlewrap, actions);
 
     this.body = document.createElement('div');
     this.body.className = 'lt-body';
@@ -92,9 +127,48 @@ export class Panel {
   /** Apply settings from storage (live updates from the options page land here). */
   applySettings(s: Settings): void {
     this.settings = s;
-    this.fab.style.display = s.showFab ? '' : 'none';
+    this.updateFabVisibility();
     this.updateAutoButton();
     this.syncNavWatch();
+  }
+
+  /** Show the floating button only when enabled AND on a confirmed Liferay page. */
+  private updateFabVisibility(): void {
+    this.fab.style.display = this.settings.showFab && this.isLiferay ? '' : 'none';
+  }
+
+  /** Is the current page a confirmed Liferay page? Gates the Alt+L hotkey. */
+  isLiferayPage(): boolean {
+    return this.isLiferay;
+  }
+
+  /** Ask the bridge for a snapshot to decide whether this is a Liferay page. */
+  private async detectLiferay(): Promise<void> {
+    const snap = await requestSnapshot();
+    this.isLiferay = !!snap?.themeDisplay;
+    this.updateFabVisibility();
+    if (this.isLiferay && !this.updateChecked) void this.checkForUpdate();
+  }
+
+  /** Compare the installed version against the latest GitHub release (via the worker). */
+  private async checkForUpdate(): Promise<void> {
+    this.updateChecked = true;
+    try {
+      const res: any = await chrome.runtime.sendMessage({
+        source: 'liferay-toolkit',
+        type: 'check-update',
+      });
+      if (!res?.latest) return;
+      const current = chrome.runtime.getManifest().version;
+      if (compareSemver(res.latest, current) > 0) {
+        this.updateLink.hidden = false;
+        this.updateLink.textContent = `↑ ${res.latest}`;
+        this.updateLink.href = res.url || `https://github.com/DarkWalker19`;
+        this.updateLink.title = `Update available: ${res.latest} (installed ${current})`;
+      }
+    } catch {
+      /* offline / no releases — leave the badge hidden */
+    }
   }
 
   private updateAutoButton(): void {
@@ -169,6 +243,16 @@ export class Panel {
   async refresh(): Promise<void> {
     this.setBody('lt-loading', 'Loading…');
     const snap = await requestSnapshot();
+    this.isLiferay = !!snap?.themeDisplay;
+    this.updateFabVisibility();
+    if (this.isLiferay && !this.updateChecked) void this.checkForUpdate();
+
+    // Not a Liferay page: show only the notice, nothing else.
+    if (!this.isLiferay) {
+      this.setBody('lt-warn', 'Liferay not detected.');
+      return;
+    }
+
     const ctx = buildContext(snap);
     const fetchers = getApplicableFetchers(ctx);
 
@@ -185,9 +269,6 @@ export class Panel {
     );
 
     this.body.innerHTML = '';
-    if (!snap?.hasLiferay) {
-      this.append('lt-warn', 'Liferay not detected on this page.');
-    }
     let rendered = 0;
     for (const { result, view } of results) {
       if (!result) continue;
@@ -195,7 +276,7 @@ export class Panel {
       this.body.appendChild(el);
       rendered++;
     }
-    if (rendered === 0 && snap?.hasLiferay) {
+    if (rendered === 0) {
       this.append('lt-empty', 'No Liferay entities detected on this page.');
     }
   }

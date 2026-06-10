@@ -33,3 +33,18 @@ export function versionSupported(v: LiferayVersion | null, range?: VersionRange)
   if (range.max && !below(v, range.max)) return false; // max is exclusive
   return true;
 }
+
+/**
+ * Compare two dotted version strings (e.g. the extension's own version against a
+ * GitHub release tag). A leading "v" is ignored. Returns 1 if a>b, -1 if a<b, 0 if equal.
+ */
+export function compareSemver(a: string, b: string): number {
+  const parts = (s: string) => s.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+  const pa = parts(a);
+  const pb = parts(b);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d > 0 ? 1 : -1;
+  }
+  return 0;
+}

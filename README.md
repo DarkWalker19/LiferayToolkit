@@ -19,6 +19,7 @@ IDs you always end up hunting for.
 - **Page (Layout)** — `plid`, `layoutId`, `uuid`, name, friendly URL, type, group id, theme id.
 - **Web Content (Journal Article)** — `articleId`, `id`, `resourcePrimKey`, `uuid`,
   group/company/user id, DDM structure & template keys, and **asset entry id**.
+- **Web Content folder** — `folderId`, `uuid`, name, group/parent ids, tree path (Journal portlet).
 - **Documents & Media folder** — `folderId`, `uuid`, name, group/repository/parent ids, tree path.
 - **Documents & Media file** — `fileEntryId`, `uuid`, title, file name, version, MIME type, size.
 - **DDM Structure** — `structureId`, `uuid`, `structureKey`, name, class name id, group id, version.
@@ -27,8 +28,14 @@ IDs you always end up hunting for.
 - **Role** — `roleId`, `uuid`, name, title, type, class name id, company id.
 - **Vocabulary** — `vocabularyId`, `uuid`, name, title, group id, company id.
 - **Category** — `categoryId`, `uuid`, name, title, vocabulary id, parent category id, tree path.
+- **Tag** — `tagId`, `uuid`, name, group/company/user id, asset count.
 
 Click any value (or the ⧉ button) to copy it. **Copy JSON** copies the full raw record.
+
+The panel activates only on confirmed Liferay pages (the floating button and Alt+L stay
+hidden elsewhere); on a non-Liferay page the toolbar icon just reports "Liferay not
+detected". The header shows the installed version and flags a newer GitHub release when
+one is available.
 
 Works across **Liferay 7.x**. Each data source is an independent, optional "fetcher"
 and can be gated to specific versions.

@@ -27,6 +27,7 @@ void (async () => {
     (e) => {
       if (
         settings.enableHotkey &&
+        panel.isLiferayPage() &&
         e.altKey &&
         !e.ctrlKey &&
         !e.metaKey &&

@@ -49,8 +49,33 @@ export const CSS = /* css */ `
   border-bottom: 1px solid #21262d;
   background: #11161d;
 }
+.lt-titlewrap { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lt-titlerow { display: flex; align-items: baseline; gap: 7px; }
 .lt-title { font-weight: 700; font-size: 14px; color: #6cb6ff; }
-.lt-actions { display: flex; gap: 6px; }
+.lt-version {
+  font-size: 10px;
+  color: #8b98a8;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  background: #1b2230;
+  border: 1px solid #2f3a4a;
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+.lt-update {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #2ea043;
+  border-radius: 4px;
+  padding: 1px 5px;
+  text-decoration: none;
+}
+.lt-update:hover { background: #3fb950; }
+.lt-credits { font-size: 10px; color: #586575; }
+.lt-credits a { color: #8b98a8; text-decoration: none; }
+.lt-credits a:hover { color: #6cb6ff; text-decoration: underline; }
+
+.lt-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 .lt-btn {
   background: #1b2230;
