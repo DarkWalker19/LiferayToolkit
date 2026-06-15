@@ -45,7 +45,7 @@ and can be gated to specific versions.
 No published store build yet — load it unpacked:
 
 ```bash
-git clone <your-repo-url> liferay-toolkit
+git clone https://github.com/DarkWalker19/LiferayToolkit.git liferay-toolkit
 cd liferay-toolkit
 npm install
 npm run build      # outputs to dist/   (npm run watch to rebuild on change)
