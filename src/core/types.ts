@@ -42,6 +42,8 @@ export interface Field {
   mono?: boolean;
   /** Optional tooltip / explanation. */
   hint?: string;
+  /** Long values (e.g. URLs): show a truncated preview, click to expand. */
+  foldable?: boolean;
 }
 
 /** The output of a fetcher: one titled section of fields. */

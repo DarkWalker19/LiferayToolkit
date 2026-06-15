@@ -49,6 +49,9 @@
         pathContext: g('getPathContext'),
         portalURL: g('getPortalURL'),
         canonicalURL: g('getCanonicalURL'),
+        isControlPanel: g('isControlPanel'),
+        isVirtualLayout: g('isVirtualLayout'),
+        isPrivateLayout: g('isPrivateLayout'),
       };
     }
     return {

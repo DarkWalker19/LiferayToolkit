@@ -24,7 +24,9 @@ export const themeDisplayFetcher: Fetcher = {
     add('Language ID', td?.languageId, false);
     add('Path context', td?.pathContext, false);
     add('Liferay version', ctx.version?.raw, false);
-    add('Current URL', ctx.url.href, false);
+    if (ctx.url.href) {
+      fields.push({ label: 'Current URL', value: ctx.url.href, mono: false, foldable: true });
+    }
 
     return {
       id: this.id,

@@ -138,6 +138,8 @@ export const CSS = /* css */ `
 }
 .lt-value:hover { color: #6cb6ff; }
 .lt-mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+.lt-foldable { text-decoration: underline dotted #586575; text-underline-offset: 2px; }
+.lt-foldable.lt-expanded { text-decoration: none; }
 
 .lt-copy {
   background: transparent;

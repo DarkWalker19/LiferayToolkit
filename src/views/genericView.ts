@@ -45,17 +45,32 @@ export function renderResult(result: FetchResult, copy: CopyFn): HTMLElement {
     const value = document.createElement('span');
     value.className = 'lt-value' + (field.mono === false ? '' : ' lt-mono');
     const text = String(field.value);
-    value.textContent = text;
-    value.title = 'Click to copy';
 
-    const doCopy = () => copy(text, field.label);
-    value.addEventListener('click', doCopy);
+    const FOLD_AT = 48;
+    if (field.foldable && text.length > FOLD_AT) {
+      // Folded by default: show a "…" preview; clicking the value toggles it.
+      const preview = text.slice(0, FOLD_AT) + '…';
+      let expanded = false;
+      value.classList.add('lt-foldable');
+      value.textContent = preview;
+      value.title = 'Click to expand';
+      value.addEventListener('click', () => {
+        expanded = !expanded;
+        value.textContent = expanded ? text : preview;
+        value.title = expanded ? 'Click to collapse' : 'Click to expand';
+        value.classList.toggle('lt-expanded', expanded);
+      });
+    } else {
+      value.textContent = text;
+      value.title = 'Click to copy';
+      value.addEventListener('click', () => copy(text, field.label));
+    }
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'lt-copy';
     copyBtn.title = 'Copy';
     copyBtn.textContent = '⧉';
-    copyBtn.addEventListener('click', doCopy);
+    copyBtn.addEventListener('click', () => copy(text, field.label));
 
     row.append(label, value, copyBtn);
     list.appendChild(row);
