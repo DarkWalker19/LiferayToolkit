@@ -7,12 +7,15 @@ export interface Settings {
   enableHotkey: boolean;
   /** While the panel is open, re-fetch automatically when the page changes. */
   autoRefresh: boolean;
+  /** Include prereleases when checking GitHub for a newer version. */
+  fetchPrereleases: boolean;
 }
 
 export const DEFAULTS: Settings = {
   showFab: true,
   enableHotkey: true,
   autoRefresh: true,
+  fetchPrereleases: false,
 };
 
 export async function loadSettings(): Promise<Settings> {

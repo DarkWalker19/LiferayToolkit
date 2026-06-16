@@ -1,6 +1,6 @@
 import { loadSettings, saveSettings, type Settings } from '../core/settings';
 
-const KEYS: (keyof Settings)[] = ['showFab', 'enableHotkey', 'autoRefresh'];
+const KEYS: (keyof Settings)[] = ['showFab', 'enableHotkey', 'autoRefresh', 'fetchPrereleases'];
 
 function flashSaved(): void {
   const el = document.getElementById('saved');

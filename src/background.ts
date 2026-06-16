@@ -1,5 +1,8 @@
 // Service worker.
 
+import { compareSemver } from './core/version';
+import { loadSettings } from './core/settings';
+
 // GitHub repo to check for newer tagged releases.
 const REPO = 'DarkWalker19/LiferayToolkit';
 const UPDATE_CACHE_KEY = 'lt_update_check';
@@ -8,18 +11,30 @@ const UPDATE_TTL_MS = 6 * 60 * 60 * 1000; // re-check at most every 6h (GitHub r
 /** Latest tagged release from GitHub, cached so we don't hammer the API. */
 async function getLatestRelease(): Promise<{ latest: string; url: string } | null> {
   const now = Date.now();
+  const { fetchPrereleases } = await loadSettings();
   const cached = (await chrome.storage.local.get(UPDATE_CACHE_KEY))[UPDATE_CACHE_KEY];
-  if (cached && now - cached.ts < UPDATE_TTL_MS) return cached.data ?? null;
+  // Cache is keyed on the prerelease preference too, so toggling it re-checks.
+  if (cached && cached.pre === fetchPrereleases && now - cached.ts < UPDATE_TTL_MS)
+    return cached.data ?? null;
 
   try {
-    const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+    // Use the releases *list* (not /releases/latest): the "latest" endpoint
+    // returns 404 unless there is a published non-draft, non-prerelease release.
+    // We pick the highest semver ourselves, optionally including prereleases.
+    const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=100`, {
       headers: { Accept: 'application/vnd.github+json' },
     });
-    const j: any = r.ok ? await r.json() : null;
-    const data = j?.tag_name
-      ? { latest: String(j.tag_name).replace(/^v/i, ''), url: j.html_url as string }
-      : null;
-    await chrome.storage.local.set({ [UPDATE_CACHE_KEY]: { ts: now, data } });
+    const list: any[] = r.ok ? await r.json() : [];
+    const newest = (Array.isArray(list) ? list : [])
+      .filter((rel) => rel && !rel.draft && rel.tag_name && (fetchPrereleases || !rel.prerelease))
+      .reduce<any>((best, rel) => {
+        const tag = String(rel.tag_name).replace(/^v/i, '');
+        return !best || compareSemver(tag, best.tag) > 0
+          ? { tag, url: rel.html_url as string }
+          : best;
+      }, null);
+    const data = newest ? { latest: newest.tag, url: newest.url } : null;
+    await chrome.storage.local.set({ [UPDATE_CACHE_KEY]: { ts: now, pre: fetchPrereleases, data } });
     return data;
   } catch {
     // Offline / no releases yet — fall back to whatever we cached before (if any).
